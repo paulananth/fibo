@@ -1,273 +1,177 @@
 ---
 name: fibo
-description: >
-  Navigate and explain the FIBO (Financial Industry Business Ontology) codebase.
-  Use this skill whenever the user asks about FIBO classes, properties, module
-  structure, class hierarchies, OWL/RDF constructs, or any financial concept
-  modeled in FIBO. Trigger for questions like "explain X in FIBO", "where is Y
-  defined", "what are the subclasses of Z", "how does module A relate to B",
-  "draw a hierarchy diagram", or any task requiring reading or interpreting
-  .rdf files in the FIBO repo. Also trigger for: "what is FIBO", "explain the
-  CAE model", "explain FBC Security", "list FIBO security types".
+description: "Use when working in the FIBO ontology repository: answering questions about FIBO classes, properties, modules, RDF/XML OWL constructs, class hierarchies, imports, restrictions, SPARQL hygiene tests, catalog mappings, or any financial concept modeled in FIBO .rdf files."
 ---
 
-# FIBO Navigation Skill
+# FIBO
 
-## Overview
+Use this skill to navigate, explain, or edit the Financial Industry Business Ontology
+(FIBO) repository. Treat the checked-out repository as the source of truth; examples
+in this skill are orientation only.
 
-FIBO (Financial Industry Business Ontology) is a production OWL 2 / RDF-XML ontology
-maintained by EDMC/OMG. It models the full financial domain — instruments, entities,
-agreements, derivatives, loans, corporate actions, indices, and market data.
+## First Steps
 
-- **Root directory:** `C:\work\projects\fibo`
-- **~594 .rdf files** across 10 domain modules
-- **License:** MIT
-- **Namespace catalog:** `C:\work\projects\fibo\catalog-v001.xml` — maps namespace URIs to file paths
+1. Work from the repository root: `ROOT=$(git rev-parse --show-toplevel 2>/dev/null || pwd)`.
+2. Use `rg`, `rg --files`, and targeted file reads. Avoid hard-coded absolute paths.
+3. Verify every class, property, subclass, import, and definition in the `.rdf` files before answering.
+4. Read `catalog-v001.xml` when resolving ontology IRIs to local files.
 
----
+## Repository Map
 
-## Module Map
+Core domain directories in this checkout:
 
-| Module | Path | Purpose |
-|--------|------|---------|
-| **FND** | `FND/` | Foundations — agreements, contracts, parties, dates, quantities, units |
-| **BE**  | `BE/`  | Business Entities — legal entities, LEI, organizational structures |
-| **BP**  | `BP/`  | Business Process — trading, lifecycle events |
-| **FBC** | `FBC/` | Financial Business & Commerce — instruments, securities, debt, equity base classes |
-| **SEC** | `SEC/` | Securities — bonds, equities, money market, structured products, funds |
-| **DER** | `DER/` | Derivatives — futures, options, swaps, forwards |
-| **LOAN**| `LOAN/`| Loans — mortgage, commercial, consumer, real estate loans |
-| **CAE** | `CAE/` | Corporate Actions & Events — dividends, mergers, rights, redemptions |
-| **IND** | `IND/` | Indices & Indicators — rate indices, economic indicators |
-| **MD**  | `MD/`  | Market Data — pricing, quotes, analytics |
+| Directory | Domain |
+| --- | --- |
+| `FND/` | Foundations: contracts, parties, dates, accounting, relations, products and services |
+| `BE/` | Business entities: legal entities, government entities, trusts, ownership and control |
+| `FBC/` | Financial business and commerce: instruments, products, services, markets, debt base classes |
+| `SEC/` | Securities: bonds, equities, funds, listings, restrictions, baskets, issuance |
+| `DER/` | Derivatives: swaps, options, futures, forwards, credit derivatives, security-based derivatives |
+| `LOAN/` | Loans: general, specific, and real-estate loan concepts |
+| `CAE/` | Corporate actions and events |
+| `IND/` | Indicators, interest rates, foreign exchange, market indices, economic indicators |
+| `MD/` | Market data temporal models for securities, derivatives, debt, and funds |
+| `BP/` | Business process and securities issuance |
+| `ACTUS/` | ACTUS contract term mappings and examples |
 
-**Dependency direction (imports flow upward):**
+Read `references/modules.md` for module-specific entry points. Read
+`references/owl-patterns.md` for RDF/XML and OWL interpretation rules.
+
+## Search Patterns
+
+Find a class, property, or individual by local name:
+
+```bash
+ROOT=$(git rev-parse --show-toplevel 2>/dev/null || pwd)
+rg -n 'rdf:about="[^"]*(;|#)Bond"' -g '*.rdf' "$ROOT"
+rg -n '<owl:(ObjectProperty|DatatypeProperty) rdf:about="[^"]*(;|#)isIssuedBy"' -g '*.rdf' "$ROOT"
+rg -n '<owl:NamedIndividual rdf:about="[^"]*(;|#)ActualActualISDA"' -g '*.rdf' "$ROOT"
 ```
-FND ← BE ← FBC ← SEC ← DER
-                 ← LOAN
-          ← CAE
-          ← IND ← MD
+
+Find direct subclasses by resource reference:
+
+```bash
+rg -n 'rdfs:subClassOf rdf:resource="[^"]*(;|#)Bond"' -g '*.rdf' "$ROOT"
 ```
 
-**Key entry-point files:**
-- `FBC/FinancialInstruments/FinancialInstruments.rdf` — base `Security`, `DebtInstrument`, `EquityInstrument`
-- `SEC/Debt/Bonds.rdf` — `Bond` and all subclasses
-- `SEC/Equities/EquityInstruments.rdf` — `Share`, `CommonShare`, `PreferredShare`
-- `DER/DerivativesContracts/Swaps.rdf` — `Swap`, `SwapLeg`
-- `CAE/CorporateEvents/CorporateActions.rdf` — `CorporateAction`, `MandatoryCorporateAction`
+Find references that may appear inside restrictions, equivalent classes, or examples:
 
----
+```bash
+rg -n '(^|[;#/])Bond("|<|$)' -g '*.rdf' "$ROOT"
+```
 
-## Reading OWL/RDF Files
+Resolve imports:
 
-Every FIBO file is OWL 2 serialized as RDF/XML. Key constructs:
+```bash
+rg -n 'owl:imports' SEC/Debt/Bonds.rdf
+rg -n 'SEC/Debt/Bonds' catalog-v001.xml
+```
 
-### Class Declaration & Hierarchy
+Search by label, definition text, or annotations when the user gives a business phrase:
+
+```bash
+rg -n 'legal entity identifier|Legal Entity Identifier|mortgage' -g '*.rdf' "$ROOT"
+rg -n '<(rdfs:label|skos:definition)[^>]*>.*mortgage' -g '*.rdf' "$ROOT"
+```
+
+Find property declarations, domains/ranges, and class restrictions that use a property:
+
+```bash
+rg -n '<owl:(ObjectProperty|DatatypeProperty) rdf:about="[^"]*(;|#)hasCouponRate"' -g '*.rdf' "$ROOT"
+rg -n 'rdfs:(domain|range) rdf:resource="[^"]*(;|#)Security"' -g '*.rdf' "$ROOT"
+rg -n 'owl:onProperty rdf:resource="[^"]*(;|#)hasCouponRate"' -g '*.rdf' "$ROOT"
+```
+
+## Term Resolution Rules
+
+- Treat same-IRI blocks as cumulative. FIBO may place additional axioms about a
+  class or property in later modules, e.g. `fibo-fbc-fi-fi;Security` appears in
+  `FBC/FinancialInstruments/FinancialInstruments.rdf` and can be constrained in
+  SEC files. Read all matching blocks when the user asks for a complete account.
+- Distinguish a local definition from an extension block. If a file's `rdf:about`
+  uses another module's entity prefix, the file is adding axioms about that term,
+  not introducing a new local term.
+- Local names are not globally unique. Disambiguate `Bond`, `Security`, `Loan`,
+  or similar names by ontology IRI/prefix, file path, definition, and imports.
+- For phrase searches, inspect `rdfs:label`, `skos:definition`, `skos:note`,
+  examples, and named individuals; do not rely only on class names.
+
+## Reading RDF/XML
+
+FIBO files are OWL 2 serialized as RDF/XML. When reading a class or property:
+
+- Read the complete XML element, not just the matching line.
+- Collect every `rdfs:subClassOf`; FIBO uses multiple inheritance.
+- Separate named superclasses from anonymous `owl:Restriction` superclasses.
+- Include `owl:equivalentClass`, `owl:disjointWith`, `owl:unionOf`, and `owl:intersectionOf` when present.
+- Prefer `skos:definition` for authoritative human-readable meaning.
+- Use `skos:note`, `skos:example`, and `rdfs:label` as supporting evidence.
+- Follow imports when a referenced class or property is not defined in the current file.
+
+Example class shape:
+
 ```xml
 <owl:Class rdf:about="&fibo-sec-dbt-bnd;Bond">
   <rdfs:subClassOf rdf:resource="&fibo-fbc-dae-dbt;CreditAgreementRepaidAtMaturity"/>
   <rdfs:subClassOf rdf:resource="&fibo-sec-dbt-dbti;TradableDebtInstrument"/>
-  <skos:definition>A debt instrument...definition text...</skos:definition>
+  <skos:definition>...</skos:definition>
 </owl:Class>
 ```
-⚠️ **Multiple `rdfs:subClassOf` = multiple inheritance.** Always collect ALL declared
-superclasses — never assume a class has exactly one parent.
 
-### Property Declarations
-```xml
-<!-- Object property (links two classes) -->
-<owl:ObjectProperty rdf:about="&fibo-fbc-fi-fi;isIssuedBy">
-  <rdfs:domain rdf:resource="&fibo-fbc-fi-fi;Security"/>
-  <rdfs:range  rdf:resource="&fibo-be-le-lp;LegalPerson"/>
-</owl:ObjectProperty>
+Read this as: `Bond` has two named parents. Trace both ancestry paths.
 
-<!-- Data property (links class to literal) -->
-<owl:DatatypeProperty rdf:about="&fibo-fnd-acc-cur;hasNotionalAmount">
-  <rdfs:range rdf:resource="&xsd;decimal"/>
-</owl:DatatypeProperty>
-```
+## Common Workflows
 
-### Restrictions (anonymous superclasses)
-```xml
-<rdfs:subClassOf>
-  <owl:Restriction>
-    <owl:onProperty rdf:resource="&fibo-fbc-fi-fi;isIssuedBy"/>
-    <owl:minQualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">1
-    </owl:minQualifiedCardinality>
-    <owl:onClass rdf:resource="&fibo-be-le-lp;LegalPerson"/>
-  </owl:Restriction>
-</rdfs:subClassOf>
-```
-Restriction types: `owl:someValuesFrom`, `owl:allValuesFrom`, `owl:hasValue`,
-`owl:minCardinality`, `owl:maxCardinality`, `owl:qualifiedCardinality`.
+### Explain a class or property
 
-### Other Key Constructs
-- `owl:imports` — dependency chain; follow to find inherited classes/properties
-- `owl:equivalentClass` — class defined by logical expression
-- `owl:disjointWith` — mutual exclusion (e.g., FixedLeg disjointWith FloatingLeg)
-- `skos:definition` — authoritative human-readable definition
-- `skos:example`, `skos:note` — supplementary annotations
-- `owl:NamedIndividual` — enumerated values (e.g., day-count conventions, credit event types)
+1. Locate the defining `.rdf` file with `rg`.
+2. Read all class/property blocks for the same IRI when completeness matters.
+3. Resolve entity prefixes from the file's `<!ENTITY ...>` declarations if needed.
+4. Summarize definition, superclasses/domain/range, restrictions, equivalent class axioms, and important imports.
+5. Cite the local file paths used.
 
-### Namespace Prefixes (common)
-| Prefix | Module | Example URI |
-|--------|--------|-------------|
-| `fibo-fnd-*` | FND | `fibo-fnd-agr-ctr:Contract` |
-| `fibo-fbc-*` | FBC | `fibo-fbc-fi-fi:Security` |
-| `fibo-sec-*` | SEC | `fibo-sec-dbt-bnd:Bond` |
-| `fibo-der-*` | DER | `fibo-der-drc-swp:Swap` |
-| `fibo-loan-*` | LOAN | `fibo-loan-ln-ln:Loan` |
-| `fibo-cae-*` | CAE | `fibo-cae-ce-act:CorporateAction` |
-| `cmns-*` | Commons | `cmns-pts:Situation` |
+### Trace a hierarchy
 
----
+1. Find the class definition.
+2. Collect all named `rdfs:subClassOf` parents.
+3. Recursively trace each parent until the chain reaches external Commons concepts or `owl:Thing`.
+4. Find subclasses with an exhaustive repo-wide `rg` search.
+5. Render multiple inheritance explicitly; do not collapse it to one parent.
 
-## Hierarchy Tracing Workflow
+### Explain a module
 
-Use this step-by-step process for any hierarchy question.
+1. Start with the module `README.md` and module metadata RDF files.
+2. Read the main ontology files listed in `references/modules.md`.
+3. Inspect `owl:imports` to explain dependencies.
+4. Check aggregate files such as `FBC/AllFBC.rdf`, `SEC/AllSEC.rdf`, and
+   regional/example aggregate files when the question is about package contents.
+5. Use actual class and property names from the files. Do not summarize from memory.
 
-### Step 1 — Find the class definition
-```bash
-grep -r "rdf:about.*ClassName" /c/work/projects/fibo --include="*.rdf" -l
-# Then read the file and find the owl:Class block
-```
+### Inspect catalogs, metadata, and tests
 
-### Step 2 — Collect ALL superclasses (multiple inheritance!)
-Read the class block completely. Count every `rdfs:subClassOf` element:
-- Named superclasses: `<rdfs:subClassOf rdf:resource="..."/>`
-- Anonymous restrictions: `<rdfs:subClassOf><owl:Restriction>...`
+1. Use root `catalog-v001.xml` first; module catalogs such as `BE/catalog-v001.xml`
+   and `ACTUS/catalog-v001.xml` can provide narrower import-resolution context.
+2. Use `MetadataFIBO.rdf` and `Metadata*.rdf` files for module identity,
+   maturity, license, copyright, and publication metadata.
+3. Use `etc/testing/hygiene_parameterized/*.sparql` for hygiene expectations
+   such as labels, definitions, licenses, deprecated resources, circular imports,
+   subclass cycles, property domains/ranges, and inverse properties.
+4. Use `etc/vocabulary/*.sparql` plus `etc/vocabulary/scaffolding.ttl` for the
+   ontology-publisher vocabulary product.
 
-**Example — Bond has TWO named superclasses:**
-```
-fibo-sec-dbt-bnd:Bond
-  rdfs:subClassOf  fibo-fbc-dae-dbt:CreditAgreementRepaidAtMaturity  ← path 1
-  rdfs:subClassOf  fibo-sec-dbt-dbti:TradableDebtInstrument           ← path 2
-```
-Trace BOTH paths up to owl:Thing separately, then render the full diamond.
+### Edit ontology files
 
-### Step 3 — Trace each path upward
-For each named superclass, repeat Step 2 recursively until you reach `owl:Thing`.
+1. Preserve RDF/XML style, indentation, namespace entity usage, and annotation patterns in the target file.
+2. Update related metadata RDF files, aggregate `All` RDF files, or `catalog-v001.xml` only when the change requires it.
+3. Check same-IRI blocks and duplicate local names before introducing new classes,
+   properties, restrictions, or named individuals.
+4. Run relevant validation or hygiene tests if available under `etc/testing/`;
+   otherwise at least run targeted `rg` checks for duplicate definitions, broken
+   local references, missing labels, and missing definitions.
 
-**Bond full ancestry:**
-```
-owl:Thing
-  └── cmns-pts:Situation                      [Commons/PartiesAndSituations]
-        └── fibo-fnd-agr-agr:Agreement        [FND/Agreements/Agreements.rdf]
-              └── fibo-fnd-agr-ctr:Contract   [FND/Agreements/Contracts.rdf]
-                    └── fibo-fnd-agr-ctr:WrittenContract
-                          ├── fibo-fbc-dae-dbt:CreditAgreement        [FBC/DebtAndEquities/Debt.rdf]
-                          │     └── fibo-fbc-dae-dbt:CreditAgreementRepaidAtMaturity
-                          │                                    ↘
-                          └── fibo-fbc-fi-fi:FinancialInstrument       [FBC/FinancialInstruments/...]
-                                └── fibo-fbc-fi-fi:DebtInstrument
-                                      └── fibo-fbc-fi-fi:Security
-                                            └── fibo-sec-dbt-dbti:TradableDebtInstrument
-                                                                   ↘
-                                                     fibo-sec-dbt-bnd:Bond  [SEC/Debt/Bonds.rdf]
-```
+## Output Guidance
 
-### Step 4 — Find ALL subclasses exhaustively
-```bash
-# Find every class that declares X as superclass — search the ENTIRE repo
-grep -r "subClassOf.*Bond\b" /c/work/projects/fibo --include="*.rdf" -l
-grep -r "subClassOf.*Security\b" /c/work/projects/fibo --include="*.rdf" -l
-```
-Then read each file found and collect the subclass names.
-Do NOT rely on a single file — subclasses can be declared across multiple modules.
-
-### Step 5 — Render as ASCII tree
-Show the full diamond for multiple-inheritance classes. Use `├──`, `└──`, `│` for branches.
-Add `[also subClassOf X]` annotations where a class has additional parents.
-
----
-
-## Finding Definitions
-
-### Locate a class by local name
-```bash
-grep -r 'rdf:about="[^"]*ClassName"' /c/work/projects/fibo --include="*.rdf" -l
-```
-
-### Locate a property
-```bash
-# Common FBC Security properties to check:
-#   isIssuedBy, isDenominatedIn, isLegallyRecordedIn, hasNominalValue,
-#   isClassifiedBy, isTradedOn, isListedOn
-grep -r 'ObjectProperty.*isLegallyRecordedIn\|isLegallyRecordedIn.*ObjectProperty' \
-  /c/work/projects/fibo --include="*.rdf"
-```
-
-### Find all properties with a given domain
-```bash
-grep -r -A5 'domain.*Security\b' /c/work/projects/fibo/FBC --include="*.rdf"
-grep -r -A5 'domain.*Security\b' /c/work/projects/fibo/SEC --include="*.rdf"
-```
-
-### Resolve a namespace prefix to a file
-1. Open `catalog-v001.xml`
-2. Find `<uri name="http://www.omg.org/spec/EDMC-FIBO/..." uri="relative/path.rdf"/>`
-3. The `uri` attribute is relative to the catalog file location
-
----
-
-## Common Tasks
-
-### "Explain class X"
-1. Grep for class URI → find file
-2. Read the full `owl:Class` block: definition, all superclasses, all restrictions
-3. Read `owl:imports` to understand dependencies
-4. Summarize: what it IS (definition), what it IS-A (hierarchy), what it REQUIRES (restrictions)
-
-### "What are the subclasses of X?"
-1. Exhaustive grep: `grep -r "subClassOf.*X\b" /c/work/projects/fibo --include="*.rdf" -l`
-2. Read each matching file; collect local names from `rdf:about`
-3. Recurse for any subclasses that themselves have subclasses
-4. Render as indented ASCII tree
-
-### "How does module A relate to module B?"
-1. Read the top-level `owl:Ontology` block of A's key files → find `owl:imports`
-2. Check whether any imports resolve to module B's namespace
-3. Identify which specific classes/properties A uses from B
-
-### "Draw a hierarchy diagram"
-1. Trace upward (Steps 2-3) — full ancestry chain
-2. Trace downward (Step 4) — all subclasses recursively
-3. Render as ASCII diamond for multiple inheritance
-
-### "Explain the LOAN module"
-1. List files: `ls /c/work/projects/fibo/LOAN/**/*.rdf`
-2. **Read each file** — cite actual class names and `skos:definition` text; do not summarize from memory
-3. Trace imports back to FBC to show the dependency chain
-
----
-
-## Reference Files
-
-| File | When to read |
-|------|--------------|
-| `references/modules.md` | Deep dive on a specific module: key files, top-level classes, import chains, common use cases |
-| `references/owl-patterns.md` | Advanced OWL constructs: unionOf, intersectionOf, equivalentClass, complex restrictions, named individuals |
-
----
-
-## Quick Grep Reference
-
-```bash
-# Find class definition file
-grep -rl 'rdf:about="[^"]*Bond"' /c/work/projects/fibo --include="*.rdf"
-
-# Find all subclasses of Bond
-grep -rl 'subClassOf.*Bond\b' /c/work/projects/fibo --include="*.rdf"
-
-# Find ObjectProperty by name
-grep -rl 'ObjectProperty.*isLegallyRecordedIn' /c/work/projects/fibo --include="*.rdf"
-
-# Find properties with Security as domain
-grep -r -l 'domain.*Security' /c/work/projects/fibo/FBC /c/work/projects/fibo/SEC --include="*.rdf"
-
-# Show imports of a file
-grep 'owl:imports' /c/work/projects/fibo/SEC/Debt/Bonds.rdf
-
-# Find skos:definition of a class
-grep -A3 'skos:definition' /c/work/projects/fibo/SEC/Debt/Bonds.rdf | head -40
-```
+- Be explicit about evidence: include file paths and local names.
+- State uncertainty when a concept is inferred from imports or restrictions rather than directly defined.
+- For diagrams, use compact ASCII trees unless the user asks for Mermaid.
+- For large subclass sets, explain search scope and whether recursion was exhaustive.
