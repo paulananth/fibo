@@ -1,256 +1,222 @@
 # FIBO Module Reference
 
-Detailed per-module guide: key files, top-level classes, import dependencies, and common questions.
+Use this as an entry-point map. Verify details in the `.rdf` files before answering.
 
----
+## Cross-Cutting Files
 
-## FND — Foundations
-**Path:** `C:\work\projects\fibo\FND\`
+| File or directory | Useful for |
+| --- | --- |
+| `catalog-v001.xml` | Root ontology IRI to local file mappings |
+| `*/catalog-v001.xml` | Module-specific catalog context where present |
+| `MetadataFIBO.rdf` | Top-level ontology metadata |
+| `*/Metadata*.rdf` | Domain and subdomain metadata, maturity, publication annotations |
+| `*/All*.rdf` | Aggregate ontologies for modules, examples, reference individuals, and regional packages |
+| `etc/testing/hygiene_parameterized/*.sparql` | Hygiene checks for labels, definitions, licenses, imports, cycles, deprecated resources, and property constraints |
+| `etc/vocabulary/*.sparql` | Vocabulary-product queries used by ontology-publisher |
+| `etc/vocabulary/scaffolding.ttl` | Vocabulary-product scaffolding triples |
 
-The base layer. Every other module imports FND. Defines abstract concepts shared across finance.
+## FND - Foundations
 
-### Key Files
-| File | What it defines |
-|------|----------------|
-| `FND/Agreements/Agreements.rdf` | `Agreement` — base of ALL contractual relationships |
-| `FND/Agreements/Contracts.rdf` | `Contract`, `WrittenContract`, `ContractParty` |
-| `FND/Parties/Parties.rdf` | `Party`, `IndependentParty`, `RelativelyContextualParty` |
-| `FND/Accounting/CurrencyAmount.rdf` | `MonetaryAmount`, `MonetaryPrice`, `hasNotionalAmount` |
-| `FND/DatesAndTimes/FinancialDates.rdf` | `ExplicitDate`, `CalculatedDate`, `DatePeriod` |
-| `FND/Quantities/QuantitiesAndUnits.rdf` | `Quantity`, `MeasurementUnit`, `ScalarQuantityValue` |
-| `FND/ProductsAndServices/PaymentsAndSchedules.rdf` | `Payment`, `PaymentSchedule` |
+Base concepts imported throughout FIBO.
 
-### Key Classes
-- `Agreement` — root of contract/instrument hierarchy (via cmns-pts:Situation)
-- `Contract` / `WrittenContract` — immediate parents of most financial instruments
-- `ContractParty` — a party with a contractual role
+Key files:
 
-### Imports From
-- `cmns` (Commons ontology — Situation, Occurrence, Party base classes)
+| File | Useful for |
+| --- | --- |
+| `FND/Agreements/Agreements.rdf` | `Agreement` and agreement relationships |
+| `FND/Agreements/Contracts.rdf` | `Contract`, `WrittenContract`, contract terms and parties |
+| `FND/Parties/Parties.rdf` | Party concepts and party-in-role patterns |
+| `FND/Accounting/CurrencyAmount.rdf` | Monetary amounts, currencies, interest rates |
+| `FND/DatesAndTimes/FinancialDates.rdf` | Financial dates, schedules, business dates |
+| `FND/ProductsAndServices/PaymentsAndSchedules.rdf` | Payment and schedule concepts |
+| `FND/Relations/Relations.rdf` | General relationship vocabulary |
+| `FND/Utilities/AnnotationVocabulary.rdf` | FIBO annotation vocabulary and maturity metadata |
 
----
+## BE - Business Entities
 
-## BE — Business Entities
-**Path:** `C:\work\projects\fibo\BE\`
+Legal entities, organizations, government bodies, trusts, and ownership/control.
 
-Legal entity types, corporate structures, LEI registration.
+Key files:
 
-### Key Files
-| File | What it defines |
-|------|----------------|
-| `BE/LegalEntities/LegalPersons.rdf` | `LegalPerson`, `LegalEntity` |
-| `BE/LegalEntities/FormalOrganizations.rdf` | `FormalOrganization`, `RegisteredOrganization` |
-| `BE/GovernmentEntities/GovernmentEntities.rdf` | `GovernmentalBody`, `Regulator` |
-| `BE/LEIs/LEIs.rdf` | `LegalEntityIdentifier`, LEI registration framework |
-| `BE/OwnershipAndControl/OwnershipAndControl.rdf` | Shareholding, control relationships |
+| File | Useful for |
+| --- | --- |
+| `BE/LegalEntities/LegalPersons.rdf` | Legal persons and legal entities |
+| `BE/LegalEntities/FormalBusinessOrganizations.rdf` | Formal and registered organizations |
+| `BE/LegalEntities/LEIEntities.rdf` | LEI-related entity concepts |
+| `BE/GovernmentEntities/GovernmentEntities.rdf` | Governmental bodies and jurisdictions |
+| `BE/Trusts/Trusts.rdf` | Trusts, trustees, beneficiaries |
+| `BE/OwnershipAndControl/OwnershipParties.rdf` | Ownership parties and ownership roles |
+| `BE/OwnershipAndControl/ControlParties.rdf` | Control parties and control roles |
+| `BE/OwnershipAndControl/CorporateOwnership.rdf` | Corporate ownership |
+| `BE/OwnershipAndControl/CorporateControl.rdf` | Corporate control |
 
-### Imports From
-- FND (Agreements, Parties, Dates)
+## FBC - Financial Business and Commerce
 
----
+Base layer for instruments, services, markets, debt, and commerce concepts.
 
-## FBC — Financial Business & Commerce
-**Path:** `C:\work\projects\fibo\FBC\`
+Key files:
 
-The financial instrument base layer. Defines `Security`, `DebtInstrument`, `EquityInstrument`,
-and base properties used by SEC, DER, LOAN.
+| File | Useful for |
+| --- | --- |
+| `FBC/FinancialInstruments/FinancialInstruments.rdf` | `FinancialInstrument`, `Security`, `DebtInstrument`, `EquityInstrument` |
+| `FBC/FinancialInstruments/InstrumentPricing.rdf` | Pricing concepts for instruments |
+| `FBC/DebtAndEquities/Debt.rdf` | `CreditAgreement`, debt terms, repayment concepts |
+| `FBC/DebtAndEquities/CreditRatings.rdf` | Credit ratings and rating agencies |
+| `FBC/DebtAndEquities/Guaranty.rdf` | Guaranty concepts |
+| `FBC/ProductsAndServices/FinancialProductsAndServices.rdf` | Financial products and services |
+| `FBC/ProductsAndServices/ClientsAndAccounts.rdf` | Clients, accounts, account relationships |
+| `FBC/FunctionalEntities/Markets.rdf` | Markets and exchanges |
+| `FBC/FunctionalEntities/FinancialServicesEntities.rdf` | Financial institutions and service providers |
 
-### Key Files
-| File | What it defines |
-|------|----------------|
-| `FBC/FinancialInstruments/FinancialInstruments.rdf` | `FinancialInstrument`, `Security`, `DebtInstrument` |
-| `FBC/DebtAndEquities/Debt.rdf` | `CreditAgreement`, `CreditAgreementRepaidAtMaturity`, `Loan` |
-| `FBC/DebtAndEquities/Equities.rdf` | `EquityInstrument`, `ShareholderEquity` |
-| `FBC/ProductsAndServices/FinancialProductsAndServices.rdf` | `FinancialProduct`, `FinancialService` |
-| `FBC/FunctionalEntities/FinancialServicesEntities.rdf` | `FinancialInstitution`, `Broker`, `Dealer` |
+Common anchors:
 
-### Key Classes
-```
-WrittenContract (FND)
-  ├── FinancialInstrument
-  │     ├── Security
-  │     │     ├── DebtInstrument  (also subClassOf CreditAgreement)
-  │     │     └── EquityInstrument
-  │     └── (many subclasses)
-  └── CreditAgreement
-        └── CreditAgreementRepaidAtMaturity  ← parent of Bond
-```
+```text
+FND:WrittenContract
+  -> FBC:FinancialInstrument
+  -> FBC:Security
+  -> FBC:DebtInstrument / FBC:EquityInstrument
 
-### Key Properties
-- `isIssuedBy` (domain: Security → range: LegalPerson)
-- `isDenominatedIn` (domain: FinancialInstrument → range: Currency)
-- `isLegallyRecordedIn` (domain: Security → range: Registry/Jurisdiction)
-- `hasNominalValue` (domain: DebtInstrument → range: MonetaryAmount)
-- `isTradedOn` (domain: Security → range: Exchange)
-
-### Imports From
-- FND, BE
-
----
-
-## SEC — Securities
-**Path:** `C:\work\projects\fibo\SEC\`
-
-Concrete security types: all bond subtypes, equity shares, money market instruments,
-structured products, funds, warrants.
-
-### Key Files
-| File | What it defines |
-|------|----------------|
-| `SEC/Debt/Bonds.rdf` | `Bond` and all 39 subclasses |
-| `SEC/Debt/DebtInstruments.rdf` | `TradableDebtInstrument`, `FixedIncomeSecurity`, `VariableIncomeSecurity` |
-| `SEC/Debt/SyntheticCDOs.rdf` | CDO tranches, structured debt |
-| `SEC/Equities/EquityInstruments.rdf` | `Share`, `CommonShare`, `PreferredShare`, `DepositaryReceipt` |
-| `SEC/Funds/Funds.rdf` | `Fund`, `MutualFund`, `ETF` |
-| `SEC/Securities/SecuritiesListings.rdf` | `ListedSecurity`, exchange listing attributes |
-| `SEC/Securities/Baskets.rdf` | `SecurityBasket`, `Index` |
-
-### Bond Hierarchy Key Points
-- **Bond has TWO parents:** `CreditAgreementRepaidAtMaturity` AND `TradableDebtInstrument`
-- **39 direct/indirect subclasses** including: AmortizingBond, BulletBond, CallableBond,
-  ConvertibleBond, CorporateBond, GovernmentBond, MunicipalBond, SovereignBond, TreasuryBond,
-  GreenBond, FixedCouponBond, FloatingRateNote, ZeroCouponBond, TIPS, MediumTermNote, StripBond
-- Multiple-inheritance is common: e.g., TreasuryBond subClassOf {SovereignBond, USTreasurySecurity}
-
-### Imports From
-- FBC, FND, BE
-
----
-
-## DER — Derivatives
-**Path:** `C:\work\projects\fibo\DER\`
-
-Futures, options, swaps, forwards, and their legs/terms.
-
-### Key Files
-| File | What it defines |
-|------|----------------|
-| `DER/DerivativesContracts/DerivativesBasics.rdf` | `DerivativeInstrument`, base derivative properties |
-| `DER/DerivativesContracts/Swaps.rdf` | `Swap`, `SwapLeg`, `FixedLeg`, `FloatingLeg`, `ReturnSwap` |
-| `DER/RateDerivatives/IRSwaps.rdf` | `InterestRateSwap`, `FixedFloatIRS`, `OvernightIndexSwap` |
-| `DER/CreditDerivatives/CreditDefaultSwaps.rdf` | `CreditDefaultSwap`, `SingleNameCDS`, `IndexCDS` |
-| `DER/SecurityBasedDerivatives/EquitySwaps.rdf` | `EquitySwap`, `TotalReturnSwap`, `VarianceSwap` |
-| `DER/DerivativesContracts/Options.rdf` | `Option`, `CallOption`, `PutOption` |
-| `DER/DerivativesContracts/Futures.rdf` | `Future`, `ForwardContract` |
-| `DER/DerivativesContracts/CurrencyContracts.rdf` | `CurrencySwap`, `CurrencyForward` |
-| `DER/DerivativesContracts/CommoditiesContracts.rdf` | `CommoditySwap`, `CommodityDerivative` |
-
-### Swap Class Hierarchy (collapsed)
-```
-Swap
-  ├── RatesSwap → InterestRateSwap → FixedFloat, FloatFloat, OIS, ZeroCoupon, Inflation
-  ├── ReturnSwap → TotalReturnSwap, IndexReturnSwap, ExcessReturnSwap
-  ├── StatisticalSwap → DispersionSwap (variance), CorrelationSwap
-  ├── CurrencySwap
-  └── CommoditySwap
-CreditDefaultSwap (separate — subClassOf DerivativeInstrument)
-  ├── SingleNameCDS, MultiNameCDS, IndexCDS, BasketCDS, TrancheCDS
+FND:WrittenContract
+  -> FBC:CreditAgreement
+  -> FBC:CreditAgreementRepaidAtMaturity
 ```
 
-### Imports From
-- FBC, SEC, FND, BE
+## SEC - Securities
 
----
+Securities, bonds, equities, funds, listings, restrictions, pools, and baskets.
 
-## LOAN — Loans
-**Path:** `C:\work\projects\fibo\LOAN\`
+Key files:
 
-Consumer, commercial, and real estate loans. Extends FBC's CreditAgreement.
+| File | Useful for |
+| --- | --- |
+| `SEC/Debt/Bonds.rdf` | `Bond` and bond subtypes |
+| `SEC/Debt/DebtInstruments.rdf` | Tradable debt, fixed/variable income securities |
+| `SEC/Debt/TradedShortTermDebt.rdf` | Short-term debt instruments |
+| `SEC/Debt/MortgageBackedSecurities.rdf` | Mortgage-backed securities |
+| `SEC/Equities/EquityInstruments.rdf` | `Share`, common shares, preferred shares |
+| `SEC/Equities/DepositaryReceipts.rdf` | Depositary receipts |
+| `SEC/Funds/Funds.rdf` | Funds and fund-related concepts |
+| `SEC/Funds/CollectiveInvestmentVehicles.rdf` | Collective investment vehicles |
+| `SEC/Securities/SecuritiesListings.rdf` | Listings and listing relationships |
+| `SEC/Securities/SecuritiesIssuance.rdf` | Security issuance concepts |
+| `SEC/Securities/SecuritiesIdentification.rdf` | Security identifiers |
+| `SEC/Securities/Baskets.rdf` | Security baskets |
+| `SEC/Securities/Pools.rdf` | Pools of assets |
 
-### Key Files
-| File | What it defines |
-|------|----------------|
-| `LOAN/LoansGeneral/Loans.rdf` | `Loan`, `LoanAgreement`, `Borrower`, `Lender` |
-| `LOAN/RealEstateLoans/RealEstateLoans.rdf` | `MortgageLoan`, `HomeEquityLoan`, `ReverseAnnuityMortgage` |
-| `LOAN/LoansSpecific/StudentLoans.rdf` | `StudentLoan`, `FederalStudentLoan` |
-| `LOAN/LoansSpecific/CommercialLoans.rdf` | `CommercialLoan`, `TermLoan`, `RevolvingCreditFacility` |
-| `LOAN/LoansSpecific/ConsumerLoans.rdf` | `ConsumerLoan`, `AutoLoan` |
-| `LOAN/RealEstateLoans/MortgageLoans.rdf` | Mortgage subtypes, LTV, amortization |
+Important pattern: `SEC/Debt/Bonds.rdf` imports both FBC debt/instrument files and
+SEC debt files. `Bond` has multiple named parents; trace all declared parents.
 
-### Key Classes
-```
-FBC:CreditAgreement
-  └── LOAN:Loan
-        ├── MortgageLoan
-        │     ├── ConformingMortgage, JumboMortgage, FHALoan
-        │     └── AdjustableRateMortgage, FixedRateMortgage
-        ├── CommercialLoan
-        │     └── TermLoan, RevolvingCreditFacility, BridgeLoan
-        ├── ConsumerLoan
-        │     └── AutoLoan, PersonalLoan
-        └── StudentLoan
-```
+## DER - Derivatives
 
-### Imports From
-- FBC (CreditAgreement as loan base), FND, BE
+Derivatives contracts, swaps, options, futures, forwards, credit derivatives, and
+security-based derivatives.
 
----
+Key files:
 
-## CAE — Corporate Actions & Events
-**Path:** `C:\work\projects\fibo\CAE\`
+| File | Useful for |
+| --- | --- |
+| `DER/DerivativesContracts/DerivativesBasics.rdf` | Base derivative concepts |
+| `DER/DerivativesContracts/Swaps.rdf` | `Swap`, swap legs, return swaps, statistical swaps |
+| `DER/DerivativesContracts/Options.rdf` | Options, calls, puts |
+| `DER/DerivativesContracts/FuturesAndForwards.rdf` | Futures and forwards |
+| `DER/DerivativesContracts/CurrencyContracts.rdf` | Currency swaps and forwards |
+| `DER/DerivativesContracts/CommoditiesContracts.rdf` | Commodity derivatives |
+| `DER/RateDerivatives/IRSwaps.rdf` | Interest-rate swaps |
+| `DER/CreditDerivatives/CreditDefaultSwaps.rdf` | Credit default swaps |
+| `DER/SecurityBasedDerivatives/SecurityBasedDerivatives.rdf` | Security-based derivatives |
+| `DER/SecurityBasedDerivatives/EquitySwaps.rdf` | Equity swaps |
 
-Corporate actions (dividends, mergers, rights issues) and lifecycle events.
-Based on ISO 15022 and GLEIF standards.
+## LOAN - Loans
 
-### Key Files
-| File | What it defines |
-|------|----------------|
-| `CAE/CorporateEvents/CorporateActions.rdf` | `CorporateAction`, `MandatoryCorporateAction`, `VoluntaryCorporateAction` |
-| `CAE/CorporateEvents/SecurityRelatedCorporateActions.rdf` | 53 security-specific action types |
-| `CAE/CorporateEvents/NotificationEvents.rdf` | `NotificationEvent`, `CompanyAnnouncementEvent` |
-| `CAE/CorporateEvents/ExchangeSpecificCorporateActions.rdf` | Exchange-specific events |
+Loan agreements, parties, products, consumer loans, commercial loans, student
+loans, and real-estate loans.
 
-### Key Classes
-```
-cmns-pts:Occurrence
-  └── Action (CAE)
-        └── CorporateAction
-              ├── MandatoryCorporateAction   ← company-initiated, no shareholder choice
-              │     ├── CashDividend, StockDividend, StockSplit, ReverseSplit
-              │     ├── MergerAbsorption, Spinoff, Liquidation
-              │     └── MaturityRedemption, EarlyRedemption, CallRedemption
-              └── VoluntaryCorporateAction   ← shareholder must elect
-                    ├── TenderOffer, RightsIssue, ExchangeOffer
-                    └── DividendReinvestmentPlan (DRIP)
-```
+Key files:
 
-### Key Properties
-- `convertsFrom` — what security is surrendered in a conversion event
-- `convertsTo` — what security is received in a conversion event
+| File | Useful for |
+| --- | --- |
+| `LOAN/LoansGeneral/Loans.rdf` | General loan concepts and parties |
+| `LOAN/LoansGeneral/LoanApplications.rdf` | Loan applications |
+| `LOAN/LoansGeneral/LoanEvents.rdf` | Loan lifecycle events |
+| `LOAN/LoansSpecific/LoanProducts.rdf` | Loan product concepts |
+| `LOAN/LoansSpecific/ConsumerLoans.rdf` | Consumer loans |
+| `LOAN/LoansSpecific/CommercialLoans.rdf` | Commercial loans |
+| `LOAN/LoansSpecific/StudentLoans.rdf` | Student loans |
+| `LOAN/RealEstateLoans/Mortgages.rdf` | Mortgages and reverse mortgages |
+| `LOAN/RealEstateLoans/MortgageOrigination.rdf` | Mortgage origination concepts |
+| `LOAN/RealEstateLoans/HomeMortgageDisclosureActCoveredMortgages.rdf` | HMDA-covered mortgages |
 
-### Imports From
-- FBC, SEC, FND, BE
+## CAE - Corporate Actions and Events
 
----
+Corporate events, corporate actions, and security-related actions.
 
-## IND — Indices & Indicators
-**Path:** `C:\work\projects\fibo\IND\`
+Key files:
 
-Rate indices (SOFR, EURIBOR), equity indices (S&P 500), economic indicators (CPI, GDP).
+| File | Useful for |
+| --- | --- |
+| `CAE/CorporateEvents/CorporateActions.rdf` | Corporate actions and action lifecycle concepts |
+| `CAE/CorporateEvents/SecurityRelatedCorporateActions.rdf` | Security-related corporate actions |
+| `CAE/CorporateEvents/ISO15022-CorporateActionIndividuals.rdf` | ISO 15022 action individuals |
+| `CAE/CorporateEvents/GLEIF-CorporateActionIndividuals.rdf` | GLEIF action individuals |
 
-### Key Files
-| File | What it defines |
-|------|----------------|
-| `IND/RateIndicators/RateIndicators.rdf` | `RateIndex`, `FloatingRateIndex`, base rate classes |
-| `IND/EconomicIndicators/EconomicIndicators.rdf` | `EconomicIndicator`, `ConsumerPriceIndex` |
-| `IND/MarketIndices/EquityIndexProducts.rdf` | `EquityIndex`, `CapitalizationWeightedIndex` |
+## IND - Indices and Indicators
 
-### Imports From
-- FBC, FND
+Interest rates, economic indicators, foreign exchange, market indices, and
+reference data.
 
----
+Key files:
 
-## MD — Market Data
-**Path:** `C:\work\projects\fibo\MD\`
+| File | Useful for |
+| --- | --- |
+| `IND/Indicators/Indicators.rdf` | Base indicator concepts |
+| `IND/InterestRates/InterestRates.rdf` | Interest rates and rate indices |
+| `IND/InterestRates/CommonInterestRates.rdf` | Common interest-rate individuals |
+| `IND/InterestRates/MarketDataProviders.rdf` | Market data providers |
+| `IND/EconomicIndicators/EconomicIndicators.rdf` | Economic indicators |
+| `IND/EconomicIndicators/NorthAmericanIndicators/USEconomicIndicators.rdf` | US economic indicators |
+| `IND/ForeignExchange/ForeignExchange.rdf` | Foreign exchange concepts |
+| `IND/MarketIndices/BasketIndices.rdf` | Basket indices |
+| `IND/MarketIndices/EquityIndexExampleIndividuals.rdf` | Equity index examples |
 
-Pricing, quotes, analytics, and market data for instruments and indices.
+## MD - Market Data
 
-### Key Files
-| File | What it defines |
-|------|----------------|
-| `MD/DebtTemporal/DebtAnalytics.rdf` | Bond analytics: `YieldToMaturity`, `ModifiedDuration`, `ConvexityValue` |
-| `MD/DebtTemporal/BondPricing.rdf` | `DirtyPrice`, `CleanPrice`, `AccruedInterest` |
-| `MD/SecuritiesExt/SecuritiesPricing.rdf` | Equity pricing, NAV, bid/ask |
+Temporal market data for debt, derivatives, funds, and security trading/credit status.
 
-### Imports From
-- SEC, IND, FBC, FND
+Key files:
+
+| File | Useful for |
+| --- | --- |
+| `MD/DebtTemporal/DebtAnalytics.rdf` | Debt analytics such as yield, duration, convexity |
+| `MD/DerivativesTemporal/FuturesTemporal.rdf` | Futures temporal concepts |
+| `MD/DerivativesTemporal/ETOptionsTemporal.rdf` | Exchange-traded options temporal concepts |
+| `MD/CIVTemporal/FundsTemporal.rdf` | Fund temporal concepts |
+| `MD/TemporalCore/SecurityTradingStatuses.rdf` | Trading status concepts |
+| `MD/TemporalCore/SecurityCreditStatuses.rdf` | Credit status concepts |
+
+## BP - Business Process
+
+Business process and securities issuance.
+
+Key files:
+
+| File | Useful for |
+| --- | --- |
+| `BP/Process/FinancialContextAndProcess.rdf` | Financial context and process vocabulary |
+| `BP/SecuritiesIssuance/IssuanceProcess.rdf` | Securities issuance process |
+| `BP/SecuritiesIssuance/IssuanceDocuments.rdf` | Issuance documents |
+| `BP/SecuritiesIssuance/DebtIssuance.rdf` | Debt issuance |
+| `BP/SecuritiesIssuance/EquitiesIPOIssuance.rdf` | Equity IPO issuance |
+| `BP/SecuritiesIssuance/MBSIssuance.rdf` | Mortgage-backed securities issuance |
+
+## ACTUS
+
+ACTUS taxonomy and contract term mappings.
+
+Key files:
+
+| File | Useful for |
+| --- | --- |
+| `ACTUS/ACTUSTaxonomy.rdf` | ACTUS taxonomy concepts |
+| `ACTUS/ACTUSContractTerms.rdf` | ACTUS contract terms |
+| `ACTUS/ACTUSTermApplicabilityMapping.rdf` | Term applicability mappings |
+| `ACTUS/ACTUS-examples.ttl` | Turtle examples |

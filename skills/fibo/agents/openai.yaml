@@ -1,0 +1,4 @@
+interface:
+  display_name: "FIBO"
+  short_description: "Navigate FIBO ontology RDF files"
+  default_prompt: "Use $fibo to explain a FIBO class, property, module, or hierarchy from the ontology repository."
